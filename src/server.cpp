@@ -79,4 +79,5 @@ int main() {
 
     shm.detach();
     std::cout << "Server exited successfully." << std::endl;
+    map.print_json();
 }
