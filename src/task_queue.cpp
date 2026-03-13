@@ -5,18 +5,6 @@
 
 #include "block_allocator.h"
 
-constexpr size_t SPIN_LIMIT = 64;
-
-inline size_t backoff(size_t spin) {
-    if (spin < SPIN_LIMIT) {
-        ++spin;
-        std::atomic_signal_fence(std::memory_order_seq_cst); // prevents compiler reordering
-    } else {
-        std::this_thread::yield();
-    }
-    return spin;
-}
-
 void TaskQueue::init(uint32_t cap) {
     capacity = cap;
     new(&head) std::atomic<size_t>(0);
@@ -27,44 +15,58 @@ void TaskQueue::init(uint32_t cap) {
     }
 }
 
-void TaskQueue::push(uint32_t block_id) {
-    size_t ticket = tail.fetch_add(1, std::memory_order_relaxed);
-    size_t idx = ticket & (capacity - 1);
-    Slot* slot = &slots[idx];
+bool TaskQueue::push(uint32_t block_id) {
+    Slot *slot;
+    size_t pos = tail.load(std::memory_order_relaxed);
 
-    size_t spin = 0;
     for (;;) {
+        slot = &slots[pos & (capacity - 1)];
+
         size_t seq = slot->sequence.load(std::memory_order_acquire);
-        if (seq == ticket) break;
-        spin = backoff(spin);
+        intptr_t dif = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos);
+
+        if (dif == 0) {
+            if (tail.compare_exchange_weak(pos, pos + 1, std::memory_order_relaxed))
+                break;
+        } else if (dif < 0) {
+            // queue full
+            return false;
+        } else {
+            pos = tail.load(std::memory_order_relaxed);
+        }
     }
 
     slot->block_id = block_id;
-    slot->sequence.store(ticket + 1, std::memory_order_release);
+    slot->sequence.store(pos + 1, std::memory_order_release);
+
+    return true;
 }
 
 uint32_t TaskQueue::pop() {
-    size_t ticket = head.fetch_add(1, std::memory_order_relaxed);
-    size_t idx = ticket & (capacity - 1);
-    Slot* slot = &slots[idx];
+    Slot *slot;
+    size_t pos = head.load(std::memory_order_relaxed);
 
-    size_t spin = 0;
     for (;;) {
+        slot = &slots[pos & (capacity - 1)];
+
         size_t seq = slot->sequence.load(std::memory_order_acquire);
-        if (seq == ticket + 1) break;
-        std::this_thread::yield();
-        spin = backoff(spin);
+        intptr_t dif = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos + 1);
+
+        if (dif == 0) {
+            if (head.compare_exchange_weak(pos, pos + 1, std::memory_order_relaxed))
+                break;
+        } else if (dif < 0) {
+            // queue empty
+            return INVALID_BLOCK;
+        } else {
+            pos = head.load(std::memory_order_relaxed);
+        }
     }
 
     uint32_t block_id = slot->block_id;
-    slot->sequence.store(ticket + capacity, std::memory_order_release);
+    slot->sequence.store(pos + capacity, std::memory_order_release);
 
     return block_id;
-}
-
-// TODO
-uint32_t TaskQueue::try_popping() {
-    return INVALID_BLOCK;
 }
 
 size_t estimate_size_for_task_queue(uint32_t capacity) {

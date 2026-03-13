@@ -15,9 +15,8 @@ struct TaskQueue {
 
     void init(uint32_t capacity);
 
-    void push(uint32_t block_id);
+    [[nodiscard]] bool push(uint32_t block_id);
     uint32_t pop();
-    uint32_t try_popping();
 };
 
 size_t estimate_size_for_task_queue(uint32_t capacity);
