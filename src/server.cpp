@@ -6,19 +6,15 @@
 #include <thread>
 #include <cstring>
 
-void server_loop(SharedMemory *shm, HashMap *map) {
+void server_loop(SharedMemory *shm, HashMap *map, int id) {
     TaskQueue *queue = shm->get_task_queue();
     BlockAllocator *allocator = shm->get_block_allocator();
 
     while (shm->is_running()) {
-        uint32_t block_id = queue->pop(); // TODO replace with try_popping or add signal handling
+        uint32_t block_id = queue->pop();
 
-        if (block_id == INVALID_BLOCK) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if (block_id == INVALID_BLOCK)
             continue;
-        }
-
-        std::cout << "Server: found task at block: " << block_id << std::endl;
 
         Block *block = allocator->get_block(block_id);
         Task *task = &block->task;
@@ -54,11 +50,11 @@ int main() {
     SharedMemory shm;
     const char *name = "/my_shared_memory";
 
-    uint32_t n_workers = 16;
+    uint32_t n_threads = 20;
     uint32_t queue_length = 64;
     uint32_t block_size = 1024;
-    uint32_t block_count = 64;
-    uint32_t bucket_count = 1024;
+    uint32_t block_count = 128;
+    uint32_t bucket_count = 10000;
 
     if (shm.init(name, queue_length, block_size, block_count) != 0) {
         std::cerr << "Failed to initialize shared memory" << std::endl;
@@ -67,14 +63,20 @@ int main() {
 
     HashMap map(bucket_count);
 
-    // TODO threads
-    std::thread worker(server_loop, &shm, &map);
+    std::vector<std::thread> threads;
+    threads.reserve(n_threads);
+    for (uint32_t i = 0; i < n_threads; ++i) {
+        threads.emplace_back(server_loop, &shm, &map, i);
+    }
 
     std::cout << "Server running. Press Enter to stop..." << std::endl;
     std::cin.get();
 
     shm.stop();
-    worker.join();
+    for (auto &t : threads) {
+        t.join();
+    }
+
     shm.detach();
     std::cout << "Server exited successfully." << std::endl;
 }

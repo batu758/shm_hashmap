@@ -31,7 +31,10 @@ void submit_task(SharedMemory &shm, TaskType type, const std::string &key, const
         std::memcpy(task->entry.data + key.size(), value.data(), value.size());
     }
 
-    queue->push(block_id);
+    while (!queue->push(block_id)) {
+        std::cerr << "Couldn't push request retrying." << std::endl;
+        std::this_thread::yield();
+    }
 
     TaskStatus status;
     while ((status = task->status.load(std::memory_order_acquire)) == TaskStatus::SUBMITTED) {
