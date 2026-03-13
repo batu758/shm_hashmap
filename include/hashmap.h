@@ -28,6 +28,7 @@ public:
     bool insert(const Entry *entry);
     bool get(Entry *entry) const;
     bool remove(Entry *entry);
+    void print_json() const;
 
     HashMap(const HashMap &) = delete;
     HashMap &operator=(const HashMap &) = delete;

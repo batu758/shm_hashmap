@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <iostream>
 #include <mutex>
 
 // source: https://github.com/opencoff/portable-lib/blob/master/src/hashfunc/fasthash.c
@@ -140,4 +141,32 @@ bool HashMap::remove(Entry *entry) {
     }
 
     return false;
+}
+
+void HashMap::print_json() const {
+    std::cout << "{";
+    bool first = true;
+
+    for (const auto &bucket : buckets) {
+        std::shared_lock lock(bucket.lock);
+        Node *cur = bucket.head;
+
+        while (cur) {
+            if (!first)
+                std::cout << ",";
+            first = false;
+
+            std::string key(reinterpret_cast<const char*>(cur->entry.key()),
+                            cur->entry.key_size);
+
+            std::string val(reinterpret_cast<const char*>(cur->entry.val()),
+                            cur->entry.val_size);
+
+            std::cout << "\"" << key << "\":\"" << val << "\"";
+
+            cur = cur->next;
+        }
+    }
+
+    std::cout << "}" << std::endl;
 }
