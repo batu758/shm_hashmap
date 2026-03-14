@@ -21,3 +21,9 @@ target_link_libraries(hashmap_server PRIVATE hashmap_core)
 
 add_executable(hashmap_client src/client.cpp)
 target_link_libraries(hashmap_client PRIVATE hashmap_core)
+
+add_executable(queue_only_server tests/queue_only_server.cpp)
+target_link_libraries(queue_only_server PRIVATE hashmap_core)
+
+add_executable(queue_only_client tests/queue_only_client.cpp)
+target_link_libraries(queue_only_client PRIVATE hashmap_core)
