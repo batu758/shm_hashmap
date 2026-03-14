@@ -37,9 +37,11 @@ Actual executables are generated in `build` folder.
     - free block
 
 ## TODO:
-- argument parsing for server
-- add multiple threads to server
-- stress tests / benchmarks / correctness
-- graceful termination for server
-- dedicated update function in hashmap
+- [x] argument parsing for server
+- [x] add multiple threads to server
+- [x] stress tests / benchmarks
+- [ ] correctness
+- [x] graceful termination for server
+- [ ] dedicated update function in hashmap
+- [ ] client checks for possible buffer overflows
 
