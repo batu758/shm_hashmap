@@ -12,7 +12,7 @@ struct Config {
     uint32_t n_threads = 20;
     uint32_t queue_length = 64;
     uint32_t block_size = 1024;
-    uint32_t block_count = 128;
+    uint32_t block_count = 64;
     uint32_t bucket_count = 10000;
     std::string shm_name = "/my_shared_memory";
 };

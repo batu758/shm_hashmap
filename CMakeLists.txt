@@ -27,3 +27,6 @@ target_link_libraries(queue_only_server PRIVATE hashmap_core)
 
 add_executable(queue_only_client tests/queue_only_client.cpp)
 target_link_libraries(queue_only_client PRIVATE hashmap_core)
+
+add_executable(stress_test_client tests/stress_test_client.cpp)
+target_link_libraries(stress_test_client PRIVATE hashmap_core)
