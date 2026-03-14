@@ -11,6 +11,11 @@
 
 void submit_task(SharedMemory &shm, TaskType type, const std::string &key, const std::string &value = "") {
     BlockAllocator *allocator = shm.get_block_allocator();
+    if (key.size() + value.size() + sizeof(Block) > allocator->block_size) {
+        std::cerr << "Query size is too big." << std::endl;
+        return;
+    }
+
     TaskQueue *queue = shm.get_task_queue();
 
     uint32_t block_id = allocator->allocate();
@@ -55,6 +60,7 @@ void submit_task(SharedMemory &shm, TaskType type, const std::string &key, const
             std::cout << "(failed)" << std::endl;
         }
     }
+    allocator->deallocate(block_id);
 }
 
 int main() {

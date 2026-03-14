@@ -40,8 +40,8 @@ Actual executables are generated in `build` folder.
 - [x] argument parsing for server
 - [x] add multiple threads to server
 - [x] stress tests / benchmarks
-- [ ] correctness
+- [x] correctness
 - [x] graceful termination for server
 - [ ] dedicated update function in hashmap
-- [ ] client checks for possible buffer overflows
-
+- [x] client checks for possible buffer overflows
+- [ ] markdown file for design choices, evaluation etc.

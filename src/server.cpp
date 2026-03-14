@@ -89,8 +89,8 @@ void server_loop(SharedMemory *shm, HashMap *map, int id) {
             break;
 
         case TaskType::UPDATE: // TODO add dedicated function
-            map->remove(&task->entry);
-            success = map->insert(&task->entry);
+            if (map->remove(&task->entry))
+                success = map->insert(&task->entry);
             break;
 
         case TaskType::DELETE:
