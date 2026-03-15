@@ -10,6 +10,7 @@ add_library(hashmap_core
         src/shared_memory.cpp
         src/block_allocator.cpp
         src/hashmap.cpp
+        src/argument_parser.cpp
 )
 
 target_include_directories(hashmap_core

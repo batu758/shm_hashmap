@@ -1,12 +1,13 @@
 #include "shared_memory.h"
 #include "task_queue.h"
 #include "block_allocator.h"
+#include "argument_parser.h"
+
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <thread>
 #include <chrono>
-#include <vector>
 #include <cstring>
 
 void submit_task(SharedMemory &shm, TaskType type, const std::string &key, const std::string &value = "") {
@@ -63,11 +64,15 @@ void submit_task(SharedMemory &shm, TaskType type, const std::string &key, const
     allocator->deallocate(block_id);
 }
 
-int main() {
-    SharedMemory shm;
-    const char *name = "/my_shared_memory";
+int main(int argc, char *argv[]) {
+    constexpr Options CLIENT_OPTIONS =
+        Options::NAME;
 
-    if (shm.attach(name) != 0) {
+    Config cfg;
+    parse_args(argc, argv, cfg, CLIENT_OPTIONS);
+
+    SharedMemory shm;
+    if (shm.attach(cfg.shm_name.c_str()) != 0) {
         std::cerr << "Failed to attach shared memory" << std::endl;
         return 1;
     }
