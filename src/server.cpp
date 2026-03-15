@@ -16,8 +16,10 @@ void server_loop(SharedMemory *shm, HashMap *map, int id) {
     while (shm->is_running()) {
         uint32_t block_id = queue->pop();
 
-        if (block_id == INVALID_BLOCK)
+        if (block_id == INVALID_BLOCK) {
+            std::this_thread::yield();
             continue;
+        }
 
         Block *block = allocator->get_block(block_id);
         Task *task = &block->task;
@@ -62,7 +64,6 @@ int main(int argc, char *argv[]) {
     parse_args(argc, argv, cfg, SERVER_OPTIONS);
 
     SharedMemory shm;
-
     if (shm.init(cfg.shm_name.c_str(), cfg.queue_cap, cfg.block_size, cfg.block_count) != 0) {
         std::cerr << "Failed to initialize shared memory" << std::endl;
         return 1;

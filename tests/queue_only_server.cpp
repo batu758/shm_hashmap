@@ -1,5 +1,6 @@
 #include "shared_memory.h"
 #include "task_queue.h"
+#include "argument_parser.h"
 
 #include <iostream>
 #include <thread>
@@ -17,24 +18,28 @@ void server_loop(SharedMemory *shm, int id) {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    constexpr Options SERVER_OPTIONS =
+        Options::THREADS |
+        Options::QUEUE_CAPACITY |
+        Options::NAME;
+
+    Config cfg {
+        .block_size = sizeof(Block),
+        .block_count = 1,
+        .shm_name = "/queue_only_memory",
+    };
+    parse_args(argc, argv, cfg, SERVER_OPTIONS);
+
     SharedMemory shm;
-    const char *name = "/queue_only_memory";
-
-    uint32_t n_threads = 10;
-    uint32_t queue_length = 64;
-    uint32_t block_size = 1024;
-    uint32_t block_count = 128;
-
-    if (shm.init(name, queue_length, block_size, block_count) != 0) {
-        std::cerr << "Failed to initialize shared memory\n";
+    if (shm.init(cfg.shm_name.c_str(), cfg.queue_cap, cfg.block_size, cfg.block_count) != 0) {
+        std::cerr << "Failed to initialize shared memory" << std::endl;
         return 1;
     }
 
     std::vector<std::thread> threads;
-    threads.reserve(n_threads);
-
-    for (uint32_t i = 0; i < n_threads; ++i) {
+    threads.reserve(cfg.n_threads);
+    for (uint32_t i = 0; i < cfg.n_threads; ++i) {
         threads.emplace_back(server_loop, &shm, i);
     }
 
@@ -42,7 +47,6 @@ int main() {
     std::cin.get();
 
     shm.stop();
-
     for (auto &t : threads) {
         t.join();
     }

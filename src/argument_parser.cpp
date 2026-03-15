@@ -18,7 +18,7 @@ static const OptionData option_table[] = {
     {Options::BLOCK_COUNT,    "c", "block-count", "N",    "BLOCK_COUNT",    "Block count"},
     {Options::BUCKET_COUNT,   "b", "buckets",     "N",    "BUCKET_COUNT",   "Hashmap bucket count"},
     {Options::NAME,           "n", "shm-name",    "NAME", "SHM_NAME",       "Shared memory name"},
-    {Options::OPERATIONS,     "n", "operations",  "N",    "OPERATIONS",     "Number of operations to do per thread"},
+    {Options::OPERATIONS,     "o", "operations",  "N",    "OPERATIONS",     "Number of operations to do per thread"},
 };
 
 void print_usage(const char *name, Options options) {
@@ -123,6 +123,9 @@ void parse_args(int argc, char **argv, Config &cfg, Options options) {
             break;
         case Options::NAME:
             cfg.shm_name = value;
+            break;
+        case Options::OPERATIONS:
+            cfg.operations = std::stoul(value);
             break;
         default:
             break;
