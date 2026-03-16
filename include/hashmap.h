@@ -6,6 +6,8 @@
 #include <shared_mutex>
 #include <vector>
 
+#include "task.h"
+
 class HashMap {
     struct Node {
         Node *next;
@@ -25,9 +27,12 @@ public:
     explicit HashMap(size_t bucket_count);
     ~HashMap();
 
+    void put(const Entry *entry);
     bool insert(const Entry *entry);
+    bool update(const Entry *entry);
     bool get(Entry *entry) const;
     bool remove(Entry *entry);
+    bool handle_read_bucket(Task *task);
     void print_json() const;
 
     HashMap(const HashMap &) = delete;

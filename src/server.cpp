@@ -30,17 +30,25 @@ void server_loop(SharedMemory *shm, HashMap *map, int id) {
             success = map->get(&task->entry);
             break;
 
+        case TaskType::PUT:
+            map->put(&task->entry);
+            success = true;
+            break;
+
         case TaskType::INSERT:
             success = map->insert(&task->entry);
             break;
 
-        case TaskType::UPDATE: // TODO add dedicated function
-            if (map->remove(&task->entry))
-                success = map->insert(&task->entry);
+        case TaskType::UPDATE:
+            success = map->update(&task->entry);
             break;
 
         case TaskType::DELETE:
             success = map->remove(&task->entry);
+            break;
+
+        case TaskType::READ_BUCKET:
+            success = map->handle_read_bucket(task);
             break;
 
         default:

@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <mutex>
+#include <thread>
+
+#include "task.h"
 
 // source: https://github.com/opencoff/portable-lib/blob/master/src/hashfunc/fasthash.c
 #define mix(h) ({               \
@@ -61,6 +64,56 @@ size_t HashMap::hash(const uint8_t *data, size_t len) const {
     return h % buckets.size();
 }
 
+void HashMap::put(const Entry *entry) {
+    Bucket &bucket = buckets[hash(entry->key(), entry->key_size)];
+    std::unique_lock lock(bucket.lock);
+
+    Node *cur = bucket.head;
+    Node *prev = nullptr;
+
+    while (cur) {
+        if (cur->entry.key_size == entry->key_size &&
+            std::memcmp(cur->entry.key(), entry->key(), entry->key_size) == 0) {
+
+            // replace existing node
+            size_t size = sizeof(Node) + entry->key_size + entry->val_size;
+            Node *node = static_cast<Node*>(std::malloc(size));
+
+            node->next = cur->next;
+            node->entry.key_size = entry->key_size;
+            node->entry.val_size = entry->val_size;
+
+            std::memcpy(node->entry.data, entry->data,
+                        entry->key_size + entry->val_size);
+
+            if (prev)
+                prev->next = node;
+            else
+                bucket.head = node;
+
+            std::free(cur);
+            return;
+            }
+
+        prev = cur;
+        cur = cur->next;
+    }
+
+    // insert new node
+    size_t size = sizeof(Node) + entry->key_size + entry->val_size;
+    Node *node = static_cast<Node*>(std::malloc(size));
+
+    node->next = bucket.head;
+
+    node->entry.key_size = entry->key_size;
+    node->entry.val_size = entry->val_size;
+
+    std::memcpy(node->entry.data, entry->data,
+                entry->key_size + entry->val_size);
+
+    bucket.head = node;
+}
+
 bool HashMap::insert(const Entry *entry) {
     Bucket &bucket = buckets[hash(entry->key(), entry->key_size)];
     std::unique_lock lock(bucket.lock);
@@ -91,6 +144,46 @@ bool HashMap::insert(const Entry *entry) {
     bucket.head = node;
 
     return true;
+}
+
+bool HashMap::update(const Entry *entry) {
+    Bucket &bucket = buckets[hash(entry->key(), entry->key_size)];
+    std::unique_lock lock(bucket.lock);
+
+    Node *cur = bucket.head;
+    Node *prev = nullptr;
+
+    while (cur) {
+        if (cur->entry.key_size == entry->key_size &&
+            std::memcmp(cur->entry.key(), entry->key(), entry->key_size) == 0) {
+
+            size_t size = sizeof(Node) + entry->key_size + entry->val_size;
+            Node *node = static_cast<Node*>(std::malloc(size));
+            if (!node)
+                return false;
+
+            node->next = cur->next;
+
+            node->entry.key_size = entry->key_size;
+            node->entry.val_size = entry->val_size;
+
+            std::memcpy(node->entry.data, entry->data,
+                        entry->key_size + entry->val_size);
+
+            if (prev)
+                prev->next = node;
+            else
+                bucket.head = node;
+
+            std::free(cur);
+            return true;
+            }
+
+        prev = cur;
+        cur = cur->next;
+    }
+
+    return false;
 }
 
 bool HashMap::get(Entry *entry) const {
@@ -141,6 +234,39 @@ bool HashMap::remove(Entry *entry) {
     }
 
     return false;
+}
+
+bool HashMap::handle_read_bucket(Task *task) {
+    uint32_t bucket_id = task->bucket_id;
+    if (bucket_id >= buckets.size())
+        return false;
+
+    Bucket &bucket = buckets[bucket_id];
+    std::shared_lock lock(bucket.lock);
+
+    Node *cur = bucket.head;
+
+    while (cur) {
+        task->entry.key_size = cur->entry.key_size;
+        task->entry.val_size = cur->entry.val_size;
+
+        std::memcpy(task->entry.data,
+                    cur->entry.data,
+                    cur->entry.key_size + cur->entry.val_size);
+
+        task->status.store(TaskStatus::WAITING, std::memory_order_release);
+
+        // wait until client signals to continue
+        while (task->status.load(std::memory_order_acquire) != TaskStatus::SUBMITTED) {
+            std::this_thread::yield();
+        }
+
+        cur = cur->next;
+    }
+
+    task->status.store(TaskStatus::DONE, std::memory_order_release);
+
+    return true;
 }
 
 void HashMap::print_json() const {

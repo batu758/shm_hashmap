@@ -131,4 +131,11 @@ void parse_args(int argc, char **argv, Config &cfg, Options options) {
             break;
         }
     }
+    // TODO block size should be at least size of the header
+    // threads > 0
+    // queue cap > 0
+    // block count > 0
+    // bucket count > 0
+    // name not empty
+    // operations > 0
 }

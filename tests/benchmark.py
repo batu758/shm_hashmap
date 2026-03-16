@@ -9,7 +9,7 @@ import sys
 
 THREADS = [1, 2, 4, 8, 16]
 TOTAL_OPS = 1_000_000
-OUTFILE = "lattice_results.json"
+OUTFILE = "results.json"
 
 results = []
 server_proc = None
@@ -46,7 +46,7 @@ def run(server_threads, client_threads):
     print(f"\nserver threads: {server_threads}\nclient: {client_threads}")
 
     server_proc = subprocess.Popen(
-        ["./build/queue_only_server", "-t", str(server_threads)],
+        ["./build/hashmap_server", "-t", str(server_threads)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -56,11 +56,9 @@ def run(server_threads, client_threads):
     try:
         output = subprocess.check_output(
             [
-                "./build/queue_only_client",
-                "-t",
-                str(client_threads),
-                "-o",
-                str(ops_per_thread),
+                "./build/stress_test_client",
+                "-t", str(client_threads),
+                "-o", str(ops_per_thread),
             ],
             text=True,
         )

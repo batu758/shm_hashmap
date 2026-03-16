@@ -6,19 +6,25 @@
 
 enum class TaskType : uint8_t {
     GET,
+    PUT,
     INSERT,
     UPDATE,
     DELETE,
+    READ_BUCKET
 };
 
 enum class TaskStatus : uint8_t {
     SUBMITTED,
     DONE,
-    FAIL
+    FAIL,
+    WAITING
 };
 
 struct Task {
     std::atomic<TaskStatus> status;
     TaskType type;
-    Entry entry;
+    union {
+        Entry entry;
+        uint32_t bucket_id;
+    };
 };
