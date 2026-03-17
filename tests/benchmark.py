@@ -8,7 +8,7 @@ import signal
 import sys
 
 THREADS = [1, 2, 4, 8, 16]
-TOTAL_OPS = 1_000_000
+TOTAL_OPS = 10_000_000
 OUTFILE = "results.json"
 
 results = []
@@ -43,7 +43,7 @@ def run(server_threads, client_threads):
 
     ops_per_thread = TOTAL_OPS // client_threads
 
-    print(f"\nserver threads: {server_threads}\nclient: {client_threads}")
+    print(f"\nserver threads: {server_threads}, client threads: {client_threads}")
 
     server_proc = subprocess.Popen(
         ["./build/hashmap_server", "-t", str(server_threads)],

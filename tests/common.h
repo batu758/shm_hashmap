@@ -27,7 +27,7 @@ inline std::vector<PreparedTask> prepare_random_tasks(size_t n) {
         PreparedTask &t = tasks[i];
         Entry *entry = t.entry();
 
-        int op = rand() % 4;
+        int op = rand() % 5;
 
         switch (op) {
         case 0:
@@ -38,6 +38,9 @@ inline std::vector<PreparedTask> prepare_random_tasks(size_t n) {
             break;
         case 2:
             t.type = TaskType::GET;
+            break;
+        case 3:
+            t.type = TaskType::PUT;
             break;
         default:
             t.type = TaskType::DELETE;
