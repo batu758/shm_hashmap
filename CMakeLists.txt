@@ -10,6 +10,7 @@ add_library(hashmap_core
         src/shared_memory.cpp
         src/block_allocator.cpp
         src/hashmap.cpp
+        src/argument_parser.cpp
 )
 
 target_include_directories(hashmap_core
@@ -28,5 +29,11 @@ target_link_libraries(queue_only_server PRIVATE hashmap_core)
 add_executable(queue_only_client tests/queue_only_client.cpp)
 target_link_libraries(queue_only_client PRIVATE hashmap_core)
 
+add_executable(stress_test_local tests/stress_test_local.cpp)
+target_link_libraries(stress_test_local PRIVATE hashmap_core)
+
 add_executable(stress_test_client tests/stress_test_client.cpp)
 target_link_libraries(stress_test_client PRIVATE hashmap_core)
+
+add_executable(stress_test_client_reuse_blocks tests/stress_test_client_reuse_blocks.cpp)
+target_link_libraries(stress_test_client_reuse_blocks PRIVATE hashmap_core)

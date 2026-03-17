@@ -1,0 +1,152 @@
+[
+  {
+    "server_threads": 1,
+    "client_threads": 1,
+    "ops_per_thread": 10000000,
+    "ns_per_query": 578.283
+  },
+  {
+    "server_threads": 1,
+    "client_threads": 2,
+    "ops_per_thread": 5000000,
+    "ns_per_query": 387.62
+  },
+  {
+    "server_threads": 1,
+    "client_threads": 4,
+    "ops_per_thread": 2500000,
+    "ns_per_query": 282.225
+  },
+  {
+    "server_threads": 1,
+    "client_threads": 8,
+    "ops_per_thread": 1250000,
+    "ns_per_query": 367.238
+  },
+  {
+    "server_threads": 1,
+    "client_threads": 16,
+    "ops_per_thread": 625000,
+    "ns_per_query": 463.916
+  },
+  {
+    "server_threads": 2,
+    "client_threads": 1,
+    "ops_per_thread": 10000000,
+    "ns_per_query": 827.893
+  },
+  {
+    "server_threads": 2,
+    "client_threads": 2,
+    "ops_per_thread": 5000000,
+    "ns_per_query": 442.582
+  },
+  {
+    "server_threads": 2,
+    "client_threads": 4,
+    "ops_per_thread": 2500000,
+    "ns_per_query": 297.404
+  },
+  {
+    "server_threads": 2,
+    "client_threads": 8,
+    "ops_per_thread": 1250000,
+    "ns_per_query": 347.768
+  },
+  {
+    "server_threads": 2,
+    "client_threads": 16,
+    "ops_per_thread": 625000,
+    "ns_per_query": 502.485
+  },
+  {
+    "server_threads": 4,
+    "client_threads": 1,
+    "ops_per_thread": 10000000,
+    "ns_per_query": 964.104
+  },
+  {
+    "server_threads": 4,
+    "client_threads": 2,
+    "ops_per_thread": 5000000,
+    "ns_per_query": 465.269
+  },
+  {
+    "server_threads": 4,
+    "client_threads": 4,
+    "ops_per_thread": 2500000,
+    "ns_per_query": 302.966
+  },
+  {
+    "server_threads": 4,
+    "client_threads": 8,
+    "ops_per_thread": 1250000,
+    "ns_per_query": 335.573
+  },
+  {
+    "server_threads": 4,
+    "client_threads": 16,
+    "ops_per_thread": 625000,
+    "ns_per_query": 500.506
+  },
+  {
+    "server_threads": 8,
+    "client_threads": 1,
+    "ops_per_thread": 10000000,
+    "ns_per_query": 1266.3
+  },
+  {
+    "server_threads": 8,
+    "client_threads": 2,
+    "ops_per_thread": 5000000,
+    "ns_per_query": 616.296
+  },
+  {
+    "server_threads": 8,
+    "client_threads": 4,
+    "ops_per_thread": 2500000,
+    "ns_per_query": 359.828
+  },
+  {
+    "server_threads": 8,
+    "client_threads": 8,
+    "ops_per_thread": 1250000,
+    "ns_per_query": 375.979
+  },
+  {
+    "server_threads": 8,
+    "client_threads": 16,
+    "ops_per_thread": 625000,
+    "ns_per_query": 473.211
+  },
+  {
+    "server_threads": 16,
+    "client_threads": 1,
+    "ops_per_thread": 10000000,
+    "ns_per_query": 1592.61
+  },
+  {
+    "server_threads": 16,
+    "client_threads": 2,
+    "ops_per_thread": 5000000,
+    "ns_per_query": 808.57
+  },
+  {
+    "server_threads": 16,
+    "client_threads": 4,
+    "ops_per_thread": 2500000,
+    "ns_per_query": 518.712
+  },
+  {
+    "server_threads": 16,
+    "client_threads": 8,
+    "ops_per_thread": 1250000,
+    "ns_per_query": 436.718
+  },
+  {
+    "server_threads": 16,
+    "client_threads": 16,
+    "ops_per_thread": 625000,
+    "ns_per_query": 424.275
+  }
+]

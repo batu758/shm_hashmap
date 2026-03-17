@@ -13,15 +13,9 @@
 #include <vector>
 #include <cstring>
 
-void submit_prepared_task(const SharedMemory &shm, const PreparedTask &prepared) {
+void submit_prepared_task(const SharedMemory &shm, const PreparedTask &prepared, uint32_t block_id) {
     BlockAllocator *allocator = shm.get_block_allocator();
     TaskQueue *queue = shm.get_task_queue();
-
-    uint32_t block_id = allocator->allocate();
-    while (block_id == INVALID_BLOCK) {
-        std::this_thread::yield();
-        block_id = allocator->allocate();
-    }
 
     Block *block = allocator->get_block(block_id);
     Task *task = &block->task;
@@ -48,14 +42,22 @@ void submit_prepared_task(const SharedMemory &shm, const PreparedTask &prepared)
     while (task->status.load(std::memory_order_acquire) == TaskStatus::SUBMITTED) {
         std::this_thread::yield();
     }
-
-    allocator->deallocate(block_id);
 }
 
 void worker(const SharedMemory *shm, const std::vector<PreparedTask> *tasks, size_t start, size_t count) {
-    for (size_t i = 0; i < count; i++) {
-        submit_prepared_task(*shm, (*tasks)[start + i]);
+    BlockAllocator *allocator = shm->get_block_allocator();
+
+    uint32_t block_id = allocator->allocate();
+    while (block_id == INVALID_BLOCK) {
+        block_id = allocator->allocate();
+        std::this_thread::yield();
     }
+
+    for (size_t i = 0; i < count; i++) {
+        submit_prepared_task(*shm, (*tasks)[start + i], block_id);
+    }
+
+    allocator->deallocate(block_id);
 }
 
 void stress_test(SharedMemory &shm, const std::vector<PreparedTask> &tasks, size_t n_threads, size_t ops_per_thread) {
