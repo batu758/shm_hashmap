@@ -1,10 +1,8 @@
 # Concurrent HashMap Server & Client with Shared Memory
 
-**Not done yet see TODO at the end.**
-
 ## Overview
 
-This project implements a concurrent hashmap server and a client that communicates with the server via POSIX shared memory which supports insertion, read, update, and delete operations. The server supports insert, read, update, and delete operations on a hashmap, using linked lists for bucket collisions. The hashmap allows concurrent accesses using read-write locks per bucket. Shared memory acts as a lock-free message buffer, which consists of a Vyukov MPMC queue `TaskQueue` and fixed size block allocator `BlockAllocator`.
+This project implements a concurrent hashmap server and a client that communicates with the server via POSIX shared memory which supports get, put, insert, update, delete and read bucket operations. The server supports insert, read, update, and delete operations on a hashmap, using linked lists for bucket collisions. The hashmap allows concurrent accesses using read-write locks per bucket. Shared memory acts as a lock-free message buffer, which consists of a Vyukov MPMC queue `TaskQueue` and fixed size block allocator `BlockAllocator`.
 
 ## Building
 
@@ -18,7 +16,11 @@ make
 make run_server
 make run_client
 ```
-Actual executables are generated in `build` folder.
+Actual executables are generated in `build` folder and can be directly executed.
+```
+./build/hashmap_server
+./build/hashmap_client
+```
 
 ## Implementation
 
@@ -37,11 +39,11 @@ Actual executables are generated in `build` folder.
     - free block
 
 ## TODO:
-- [x] argument parsing for server
+- [x] argument parsing
 - [x] add multiple threads to server
 - [x] stress tests / benchmarks
 - [x] correctness
 - [x] graceful termination for server
-- [ ] dedicated update function in hashmap
+- [x] dedicated update, put, read bucket functions in hashmap
 - [x] client checks for possible buffer overflows
-- [ ] markdown file for design choices, evaluation etc.
+- [x] markdown file for design choices, evaluation etc.
