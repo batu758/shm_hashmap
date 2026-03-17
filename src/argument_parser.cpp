@@ -1,6 +1,9 @@
 #include "argument_parser.h"
 
+#include <cstring>
 #include <iostream>
+
+#include "block_allocator.h"
 
 struct OptionData {
     Options flag;
@@ -81,6 +84,53 @@ const OptionData* find_option(const std::string& arg) {
     return nullptr;
 }
 
+void validate_config(const Config &cfg) {
+    if (cfg.n_threads == 0) {
+        std::cerr << "Error: threads must be > 0\n";
+        std::exit(1);
+    }
+    if (cfg.queue_cap == 0) {
+        std::cerr << "Error: queue capacity must be > 0\n";
+        std::exit(1);
+    }
+    if (cfg.block_count == 0) {
+        std::cerr << "Error: block count must be > 0\n";
+        std::exit(1);
+    }
+    if (cfg.bucket_count == 0) {
+        std::cerr << "Error: bucket count must be > 0\n";
+        std::exit(1);
+    }
+    if (cfg.shm_name.empty()) {
+        std::cerr << "Error: shared memory name must not be empty\n";
+        std::exit(1);
+    }
+    if (cfg.operations == 0) {
+        std::cerr << "Error: operations must be > 0\n";
+        std::exit(1);
+    }
+    if (cfg.block_size < sizeof(Block)) {
+        std::cerr << "Error: block size must be at least the size of block header\n";
+        std::exit(1);
+    }
+}
+
+uint32_t parse_number(const char* value, const char* option_name) {
+    try {
+        size_t pos = 0;
+        unsigned long val = std::stoul(value, &pos);
+        if (pos != std::strlen(value)) {
+            // extra characters after number
+            std::cerr << "Error: invalid value for " << option_name << ": " << value << "\n";
+            std::exit(1);
+        }
+        return static_cast<unsigned>(val);
+    } catch (const std::exception&) {
+        std::cerr << "Error: invalid value for " << option_name << ": " << value << "\n";
+        std::exit(1);
+    }
+}
+
 void parse_args(int argc, char **argv, Config &cfg, Options options) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -107,35 +157,29 @@ void parse_args(int argc, char **argv, Config &cfg, Options options) {
 
         switch (opt->flag) {
         case Options::THREADS:
-            cfg.n_threads = std::stoul(value);
+            cfg.n_threads = parse_number(value, arg.c_str());
             break;
         case Options::QUEUE_CAPACITY:
-            cfg.queue_cap = std::stoul(value);
+            cfg.queue_cap = parse_number(value, arg.c_str());
             break;
         case Options::BLOCK_SIZE:
-            cfg.block_size = std::stoul(value);
+            cfg.block_size = parse_number(value, arg.c_str());
             break;
         case Options::BLOCK_COUNT:
-            cfg.block_count = std::stoul(value);
+            cfg.block_count = parse_number(value, arg.c_str());
             break;
         case Options::BUCKET_COUNT:
-            cfg.bucket_count = std::stoul(value);
+            cfg.bucket_count = parse_number(value, arg.c_str());
             break;
         case Options::NAME:
             cfg.shm_name = value;
             break;
         case Options::OPERATIONS:
-            cfg.operations = std::stoul(value);
+            cfg.operations = parse_number(value, arg.c_str());
             break;
         default:
             break;
         }
     }
-    // TODO block size should be at least size of the header
-    // threads > 0
-    // queue cap > 0
-    // block count > 0
-    // bucket count > 0
-    // name not empty
-    // operations > 0
+    validate_config(cfg);
 }
